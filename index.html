@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>  জীববিজ্ঞান MCQ | Board Exam</title>
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#eef1f4;
+    margin:0;
+}
+.container{
+    max-width:650px;
+    margin:20px auto;
+    background:#fff;
+    padding:20px;
+    border-radius:8px;
+    box-shadow:0 3px 8px rgba(0,0,0,.1);
+}
+h1,h2{text-align:center}
+input,button{padding:10px;margin:5px 0}
+button{cursor:pointer}
+.hidden{display:none}
+.top{display:flex;justify-content:space-between;font-weight:bold}
+.question{font-size:18px;margin:15px 0}
+.options button{
+    width:100%;
+    text-align:left;
+    border:1px solid #bbb;
+    background:#f9f9f9;
+}
+.options button.selected{
+    background:#dbeafe;
+    border-color:#2563eb;
+}
+.nav button{margin:2px;width:35px}
+.progress{height:8px;background:#ddd;margin:10px 0}
+.progress div{height:100%;background:#3498db;width:0%}
+.review-item{border:1px solid #ddd;padding:10px;margin:10px 0;border-radius:6px}
+.review-item.correct{background:#e6fffa}
+.review-item.wrong{background:#ffe6e6}
+.nav button.answered{
+    background:#2563eb;
+    color:#fff;
+    border-color:#2563eb;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div class="container" id="loginBox">
+<h1>পরীক্ষার্থী লগইন</h1>
+<input id="name" placeholder="তোমার নাম লেখো">
+<button onclick="startExam()">Start Exam</button>
+</div>
+
+<!-- QUIZ -->
+<div class="container hidden" id="quizBox">
+<div class="top">
+<div id="qno"></div>
+<div id="timer"></div>
+</div>
+
+<div class="progress"><div id="bar"></div></div>
+<div class="question"></div>
+<div class="options"></div>
+<div class="nav" id="nav"></div>
+
+<button onclick="finish()">Submit</button>
+</div>
+
+<!-- RESULT -->
+<div class="container hidden" id="resultBox">
+<h2>📊 পরীক্ষার ফলাফল</h2>
+<p id="student"></p>
+<p id="correct"></p>
+<p id="wrong"></p>
+<p id="score"></p>
+<p id="accuracy"></p>
+<button onclick="restart()">🔄 আবার শুরু করো</button>
+</div>
+
+<!-- REVIEW -->
+<div class="container hidden" id="reviewBox">
+<h2>📝 Answer Review</h2>
+<div id="reviewList"></div>
+<button onclick="restart()">🔄 আবার শুরু করো</button>
+</div>
+
+<script>
+/* ===== JULY MOVEMENT MCQ ===== */
+
+const questions = [
+
+{q:"জীববিজ্ঞান শব্দটি কোন দুটি গ্রিক শব্দ থেকে এসেছে?", 
+o:["Bio + logy","bios + logos","bio + science","life + knowledge"], 
+a:1},
+
+{q:"জীববিজ্ঞানের দুটি প্রধান শাখা হলো—", 
+o:["পদার্থ ও রসায়ন","উদ্ভিদবিজ্ঞান ও প্রাণিবিজ্ঞান","অণুজীববিজ্ঞান ও পরিবেশবিজ্ঞান","বংশগতি ও বিবর্তন"], 
+a:1},
+
+{q:"তাত্ত্বিক ভিত্তির উপর যে জীববিজ্ঞানের শাখা গড়ে উঠেছে তাকে বলে—", 
+o:["ফলিত জীববিজ্ঞান","ভৌত জীববিজ্ঞান","পরিবেশবিজ্ঞান","কৃষিবিজ্ঞান"], 
+a:1},
+
+{q:"জীবদেহের বাহ্যিক ও অভ্যন্তরীণ গঠন নিয়ে আলোচনা করে কোন শাখা?", 
+o:["Cytology","Morphology","Genetics","Ecology"], 
+a:1},
+
+{q:"পৃথিবীর বিভিন্ন অঞ্চলে জীবের বিস্তার নিয়ে আলোচনা করে—", 
+o:["Biogeography","Ecology","Cytology","Histology"], 
+a:0},
+
+{q:"ভাইরাস, ব্যাকটেরিয়া ইত্যাদি নিয়ে আলোচনা করে—", 
+o:["Entomology","Microbiology","Ecology","Biochemistry"], 
+a:1},
+
+{q:"জীবজগতকে পাঁচ রাজ্যে ভাগ করার প্রস্তাব দেন—", 
+o:["লিনিয়াস","ডারউইন","R. H. Whittaker","মারগুলিস"], 
+a:2},
+
+{q:"শ্রেণিবিন্যাসবিদ্যার জনক কে?", 
+o:["Darwin","Lamarck","Carolus Linnaeus","Mendel"], 
+a:2},
+
+{q:"Linnaeus এর বিখ্যাত বই—", 
+o:["Origin of Species","Species Plantarum","Micrographia","Evolution"], 
+a:1},
+
+{q:"দ্বিপদ নামকরণ পদ্ধতিতে বৈজ্ঞানিক নাম কয়টি অংশ নিয়ে গঠিত?", 
+o:["১","২","৩","৪"], 
+a:1},
+
+{q:"বৈজ্ঞানিক নাম সাধারণত কোন ভাষায় লেখা হয়?", 
+o:["ইংরেজি","ফরাসি","ল্যাটিন","জার্মান"], 
+a:2},
+
+{q:"বৈজ্ঞানিক নাম মুদ্রণের সময় কিভাবে লেখা হয়?", 
+o:["Bold","Italic","Capital","Underline"], 
+a:1},
+
+{q:"ধানের বৈজ্ঞানিক নাম—", 
+o:["Oryza indica","Oryza sativa","Triticum aestivum","Zea mays"], 
+a:1},
+
+{q:"রয়েল বেঙ্গল টাইগারের বৈজ্ঞানিক নাম—", 
+o:["Panthera leo","Panthera tigris","Felis tigris","Panthera pardus"], 
+a:1},
+
+{q:"জীবের শ্রেণিবিন্যাসের সর্বনিম্ন ধাপ কোনটি?", 
+o:["Kingdom","Class","Genus","Species"], 
+a:3},
+
+{q:"প্রোক্যারিওটিক কোষে কোনটি অনুপস্থিত?", 
+o:["রাইবোজোম","নিউক্লিয়াস","সাইটোপ্লাজম","কোষঝিল্লি"], 
+a:1},
+
+{q:"নিচের কোনটি প্রোক্যারিওটিক জীব?", 
+o:["অ্যামিবা","ব্যাকটেরিয়া","মাশরুম","মানুষ"], 
+a:1},
+
+{q:"Protista রাজ্যের একটি উদাহরণ—", 
+o:["ব্যাকটেরিয়া","অ্যামিবা","মাশরুম","মানুষ"], 
+a:1},
+
+{q:"সালোকসংশ্লেষণ করে কোন রাজ্যের জীব?", 
+o:["Fungi","Plantae","Animalia","Monera"], 
+a:1},
+
+{q:"Animalia রাজ্যের জীবের প্রধান বৈশিষ্ট্য—", 
+o:["স্বভোজী","পরভোজী","এককোষী","ক্লোরোপ্লাস্টযুক্ত"], 
+a:1},
+
+{q:"মানুষের শ্রেণি (Class) কী?", 
+o:["Chordata","Mammalia","Animalia","Primate"], 
+a:1},
+
+{q:"জীবের সাদৃশ্য ও বৈসাদৃশ্যের ভিত্তিতে বিভিন্ন দলে ভাগ করার প্রক্রিয়াকে কী বলে?", 
+o:["বিবর্তন","শ্রেণিবিন্যাস","প্রজনন","অভিযোজন"], 
+a:1},
+
+{q:"ইউক্যারিওটা (Eukaryotae) কোষের বৈশিষ্ট্য কী?", 
+o:["নিউক্লিয়াস নেই","কোষপ্রাচীর নেই","সুস্পষ্ট নিউক্লিয়াস থাকে","DNA থাকে না"], 
+a:2},
+
+{q:"প্রাণীর বৈজ্ঞানিক নামকরণের নিয়ম কোন সংস্থা নির্ধারণ করে?", 
+o:["ICBN","ICZN","UNESCO","FAO"], 
+a:1},
+
+{q:"বৈজ্ঞানিক নামের প্রথম শব্দের প্রথম অক্ষর কেমন হবে?", 
+o:["ছোট হাতের","বড় হাতের","Bold","Italic"], 
+a:1},
+
+{q:"উদ্ভিদের বৈজ্ঞানিক নামকরণের নিয়ম কোন সংস্থা নির্ধারণ করে?", 
+o:["ICZN","ICBN","WHO","FAO"], 
+a:1},
+
+{q:"বৈজ্ঞানিক নামের শেষে কখনও কোন তথ্য লেখা হয়?", 
+o:["আবিষ্কারের সাল","আবিষ্কারকের নাম","দেশ","পরিবার"], 
+a:1},
+
+{q:"Five Kingdom শ্রেণিবিন্যাসের ভিত্তি কী?", 
+o:["কোষের গঠন","পুষ্টি গ্রহণ পদ্ধতি","সংগঠনের স্তর","উপরের সবগুলো"], 
+a:3},
+
+{q:"ঔষধ প্রস্তুত ও সংরক্ষণ সম্পর্কিত বিজ্ঞান—", 
+o:["Pharmacy","Medical Science","Biochemistry","Microbiology"], 
+a:0},
+
+{q:"জীবের জিন পরিবর্তন ও ব্যবহার সম্পর্কিত বিজ্ঞান—", 
+o:["Genetics","Genetic Engineering","Ecology","Forestry"], 
+a:1}
+
+];
+/* প্রতি প্রশ্ন ০.৭৫ মিনিট */
+let i=0,answers=new Array(questions.length).fill(null);
+let time=questions.length*45;
+let student="";
+
+/* ===== rest code unchanged ===== */
+function startExam(){
+ student=document.getElementById("name").value;
+ if(!student){alert("নাম লেখো");return;}
+ loginBox.classList.add("hidden");
+ quizBox.classList.remove("hidden");
+ load(); startTimer();
+}
+
+function load(){
+ qno.innerText=`প্রশ্ন ${i+1}/${questions.length}`;
+ document.querySelector(".question").innerText=questions[i].q;
+ let html="";
+ questions[i].o.forEach((x,j)=>{
+   let cls=answers[i]===j?"selected":"";
+   html+=`<button class="${cls}" onclick="answer(${j})">${x}</button>`;
+ });
+ document.querySelector(".options").innerHTML=html;
+ bar.style.width=((answers.filter(x=>x!==null).length/questions.length)*100)+"%";
+ navigator();
+}
+
+function answer(a){
+ answers[i]=a;
+ let next=-1;
+ for(let j=i+1;j<questions.length;j++) if(answers[j]===null){next=j;break;}
+ if(next===-1) for(let j=0;j<i;j++) if(answers[j]===null){next=j;break;}
+ if(next!==-1) i=next;
+ load();
+}
+
+function navigator(){
+ let n="";
+ for(let j=0;j<questions.length;j++){
+   let cls=answers[j]!==null?"answered":"";
+   n+=`<button class="${cls}" onclick="go(${j})">${j+1}</button>`;
+ }
+ nav.innerHTML=n;
+}
+
+function go(x){i=x;load();}
+
+function startTimer(){
+ let t=setInterval(()=>{
+   let m=Math.floor(time/60);
+   let s=time%60;
+   timer.innerText=`সময় ${m}:${String(s).padStart(2,"0")}`;
+   time--; if(time<0){clearInterval(t);finish();}
+ },1000);
+}
+
+function finish(){
+ let score=0,reviewHTML="";
+ answers.forEach((a,idx)=>{
+   let ok=a===questions[idx].a;
+   if(ok) score++;
+   reviewHTML+=`
+   <div class="review-item ${ok?"correct":"wrong"}">
+   <p><b>প্রশ্ন ${idx+1}:</b> ${questions[idx].q}</p>
+   <p>🟢 সঠিক উত্তর: ${questions[idx].o[questions[idx].a]}</p>
+   <p>🔵 তোমার উত্তর: ${a!==null?questions[idx].o[a]:"উত্তর দাওনি"}</p>
+   </div>`;
+ });
+ quizBox.classList.add("hidden");
+ resultBox.classList.remove("hidden");
+ studentEl.innerText="পরীক্ষার্থী: "+student;
+ correct.innerText="✅ সঠিক: "+score;
+ wrong.innerText="❌ ভুল: "+(questions.length-score);
+ scoreEl.innerText=`মোট স্কোর: ${score}/${questions.length}`;
+ accuracy.innerText=`Accuracy: ${((score/questions.length)*100).toFixed(2)}%`;
+ reviewBox.classList.remove("hidden");
+ reviewList.innerHTML=reviewHTML;
+}
+
+function restart(){location.reload();}
+
+const loginBox=document.getElementById("loginBox");
+const quizBox=document.getElementById("quizBox");
+const resultBox=document.getElementById("resultBox");
+const qno=document.getElementById("qno");
+const timer=document.getElementById("timer");
+const bar=document.getElementById("bar");
+const nav=document.getElementById("nav");
+const studentEl=document.getElementById("student");
+const correct=document.getElementById("correct");
+const wrong=document.getElementById("wrong");
+const scoreEl=document.getElementById("score");
+const accuracy=document.getElementById("accuracy");
+const reviewBox=document.getElementById("reviewBox");
+const reviewList=document.getElementById("reviewList");
+</script>
+
+</body>
+</html>
